@@ -42,8 +42,19 @@ template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud) 
 {
   // TODO: Create two new point clouds, one cloud with obstacles and other with segmented plane
+	pcl::ExtractIndices<PointT> extract;
 
-    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(cloud, cloud);
+	typename pcl::PointCloud<PointT>::Ptr cloud_p(new pcl::PointCloud<PointT>);
+	extract.setInputCloud (cloud);
+	extract.setIndices (inliers);
+	extract.setNegative (false);
+	extract.filter (*cloud_p);
+	std::cerr << "PointCloud representing the planar component: " << cloud_p->width * cloud_p->height << " data points." << std::endl;
+
+	typename pcl::PointCloud<PointT>::Ptr cloud_o(new pcl::PointCloud<PointT>);
+	extract.setNegative (true);
+	extract.filter (*cloud_o);
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(cloud_p, cloud_o);
     return segResult;
 }
 
@@ -53,8 +64,26 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 {
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
-	pcl::PointIndices::Ptr inliers;
+
     // TODO:: Fill in this function to find inliers for the cloud.
+	// Create the segmentation object
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
+	pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
+	pcl::SACSegmentation<PointT> seg;
+
+
+	seg.setOptimizeCoefficients (true);
+	seg.setModelType (pcl::SACMODEL_PLANE);
+	seg.setMethodType (pcl::SAC_RANSAC);
+	seg.setMaxIterations (maxIterations);
+	seg.setDistanceThreshold (distanceThreshold);
+	// Segment the largest planar component from the remaining cloud
+	seg.setInputCloud (cloud);
+	seg.segment (*inliers, *coefficients);
+	if (inliers->indices.size () == 0)
+	{
+	  std::cerr << "Could not estimate a planar model for the given dataset." << std::endl;
+	}
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
