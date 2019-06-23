@@ -82,29 +82,53 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
   // -----Open 3D viewer and display City Block     -----
   // ----------------------------------------------------
 
-  ProcessPointClouds<pcl::PointXYZI> pointProcessorI;
-  pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessorI.loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
+  ProcessPointClouds<pcl::PointXYZI> pointProcessor;
+  pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessor.loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
 //  renderPointCloud(viewer,inputCloud,"inputCloud");
   Box box;
   box.x_min = -10;
-  box.y_min = -8;
+  box.y_min = -6;
   box.z_min = -2;
   box.x_max = 30;
   box.y_max = 8;
   box.z_max = 3;
 //  renderBox(viewer, box, 1, Color(0,1,0), 1);
-  auto filterCloud = pointProcessorI.FilterCloud(inputCloud, 0.2 , Eigen::Vector4f (box.x_min, box.y_min,  box.z_min, 1),
+  auto filterCloud = pointProcessor.FilterCloud(inputCloud, 0.2 , Eigen::Vector4f (box.x_min, box.y_min,  box.z_min, 1),
 		  Eigen::Vector4f ( box.x_max, box.y_max , box.z_max, 1));
   renderPointCloud(viewer,filterCloud,"filterCloud");
 
 
+  //the box for filtering the roof area
   box.x_min = -1.5;
   box.y_min = -1.7;
   box.z_min = -1;
   box.x_max = 2.6;
   box.y_max = 1.7;
   box.z_max = -0.4;
-  renderBox(viewer, box, 1, Color(0,1,0), 1);
+  renderBox(viewer, box, 100, Color(0,1,0), 1);
+
+  //segment the cloud
+  std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessor.SegmentPlane(filterCloud, 100, 0.2);
+  renderPointCloud(viewer,segmentCloud.first,"obstCloud",Color(1,0,0));
+  renderPointCloud(viewer,segmentCloud.second,"planeCloud",Color(0,1,0));
+
+
+  //cluster the cloud
+  std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = pointProcessor.Clustering(segmentCloud.first, 0.8, 21, 500);
+
+  int clusterId = 0;
+  std::vector<Color> colors = {Color(1,0,0), Color(1,1,0), Color(0,0,1)};
+
+  for(pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters)
+  {
+		std::cout << "cluster size ";
+		pointProcessor.numPoints(cluster);
+		renderPointCloud(viewer,cluster,"obstCloud"+std::to_string(clusterId),colors[clusterId]);
+		Box box = pointProcessor.BoundingBox(cluster);
+		renderBox(viewer,box,clusterId);
+		++clusterId;
+  }
+
 }
 
 //setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side, FPS}
