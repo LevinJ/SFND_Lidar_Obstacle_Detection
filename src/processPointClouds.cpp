@@ -84,7 +84,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 	extract.setIndices (inliers);
 	extract.setNegative (false);
 	extract.filter (*cloud_p);
-	std::cerr << "PointCloud representing the planar component: " << cloud_p->width * cloud_p->height << " data points." << std::endl;
+	std::cout << "PointCloud representing the planar component: " << cloud_p->width * cloud_p->height << " data points." << std::endl;
 
 	typename pcl::PointCloud<PointT>::Ptr cloud_o(new pcl::PointCloud<PointT>);
 	extract.setNegative (true);
@@ -214,7 +214,7 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::loadPcd(std::s
     {
         PCL_ERROR ("Couldn't read file \n");
     }
-    std::cerr << "Loaded " << cloud->points.size () << " data points from "+file << std::endl;
+    std::cout << "Loaded " << cloud->points.size () << " data points from "+file << std::endl;
 
     return cloud;
 }
