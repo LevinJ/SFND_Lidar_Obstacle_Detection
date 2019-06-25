@@ -111,7 +111,8 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 	return inliersResult;
 
 }
-std::unordered_set<int> RansacPlane(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int maxIterations, float distanceTol)
+std::unordered_set<int> RansacPlane(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int maxIterations, float distanceTol,
+		pcl::PointIndices &inliers, pcl::ModelCoefficients &model_coefficients)
 {
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
@@ -165,11 +166,15 @@ std::unordered_set<int> RansacPlane(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, i
 
 		if(inliers.size() > inliersResult.size()){
 			inliersResult = inliers;
+			model_coefficients.values = {a,b,c,d};
 		}
 
 	}
 
-
+	//fill in output variable
+	for(int point : inliersResult){
+		inliers.indices.push_back(point);
+	}
 	// Return indicies of inliers from fitted line with most inliers
 	return inliersResult;
 }
@@ -182,12 +187,13 @@ int main ()
 	// Create data
 //	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData();
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData3D();
-	
+	pcl::PointIndices::Ptr inliers_1 (new pcl::PointIndices ());
+	pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
 
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
 //	std::unordered_set<int> inliers = Ransac(cloud, 10, 1);
 	auto startTime = std::chrono::steady_clock::now();
-	std::unordered_set<int> inliers = RansacPlane(cloud, 100, 0.2);
+	std::unordered_set<int> inliers = RansacPlane(cloud, 100, 0.2, *inliers_1, *coefficients);
 	auto endTime = std::chrono::steady_clock::now();
 	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 	std::cout << "plane segmentation took " << elapsedTime.count() << " milliseconds" << std::endl;
