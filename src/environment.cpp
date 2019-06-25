@@ -8,6 +8,9 @@
 // using templates for processPointClouds so also include .cpp to help linker
 #include "processPointClouds.cpp"
 
+#include "ProcessPointCloudsCourse.h"
+#include "ProcessPointCloudsCourse.cpp"
+
 std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
 
@@ -76,7 +79,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
   
 }
 
-void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI> &pointProcessor, const pcl::PointCloud<pcl::PointXYZI>::Ptr& inputCloud)
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI> *pointProcessor, const pcl::PointCloud<pcl::PointXYZI>::Ptr& inputCloud)
 //void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
   // ----------------------------------------------------
@@ -92,7 +95,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
   box.y_max = 7;
   box.z_max = 3;
 //  renderBox(viewer, box, 1, Color(0,1,0), 1);
-  auto filterCloud = pointProcessor.FilterCloud(inputCloud, 0.2 , Eigen::Vector4f (box.x_min, box.y_min,  box.z_min, 1),
+  auto filterCloud = pointProcessor->FilterCloud(inputCloud, 0.2 , Eigen::Vector4f (box.x_min, box.y_min,  box.z_min, 1),
 		  Eigen::Vector4f ( box.x_max, box.y_max , box.z_max, 1));
   renderPointCloud(viewer,filterCloud,"filterCloud");
 
@@ -107,13 +110,13 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
 //  renderBox(viewer, box, 100, Color(0,1,0), 1);
 
   //segment the cloud
-  std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessor.SegmentPlane(filterCloud, 100, 0.2);
+  std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessor->SegmentPlane(filterCloud, 100, 0.2);
   renderPointCloud(viewer,segmentCloud.first,"obstCloud",Color(1,0,0));
   renderPointCloud(viewer,segmentCloud.second,"planeCloud",Color(0,1,0));
 
 
   //cluster the cloud
-  std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = pointProcessor.Clustering(segmentCloud.first, 0.5, 10, 1600);
+  std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = pointProcessor->Clustering(segmentCloud.first, 0.5, 10, 1600);
 
   int clusterId = 0;
   std::vector<Color> colors = {Color(1,0,0), Color(1,1,0), Color(0,0,1)};
@@ -121,9 +124,9 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
   for(pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters)
   {
 		std::cout << "cluster size ";
-		pointProcessor.numPoints(cluster);
+		pointProcessor->numPoints(cluster);
 //		renderPointCloud(viewer,cluster,"obstCloud"+std::to_string(clusterId),colors[clusterId]);
-		Box box = pointProcessor.BoundingBox(cluster);
+		Box box = pointProcessor->BoundingBox(cluster);
 		renderBox(viewer,box,clusterId);
 		++clusterId;
   }
@@ -164,8 +167,11 @@ int main (int argc, char** argv)
 //    simpleHighway(viewer);
 
 //    cityBlock(viewer);
-    ProcessPointClouds<pcl::PointXYZI> pointProcessor;
-    std::vector<boost::filesystem::path> stream = pointProcessor.streamPcd("../src/sensors/data/pcd/data_1");
+//    ProcessPointClouds<pcl::PointXYZI> *pointProcessor = new ProcessPointClouds<pcl::PointXYZI>();
+    //ProcessPointCloudsCourse uses the RANSAC, KDTreea and Eucleadian clustering implemented by myself
+    ProcessPointClouds<pcl::PointXYZI> *pointProcessor = new ProcessPointCloudsCourse<pcl::PointXYZI>();
+
+    std::vector<boost::filesystem::path> stream = pointProcessor->streamPcd("../src/sensors/data/pcd/data_1");
     auto streamIterator = stream.begin();
     pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloudI;
 
@@ -176,7 +182,7 @@ int main (int argc, char** argv)
 		viewer->removeAllShapes();
 
 		// Load pcd and run obstacle detection process
-		inputCloudI = pointProcessor.loadPcd((*streamIterator).string());
+		inputCloudI = pointProcessor->loadPcd((*streamIterator).string());
 		cityBlock(viewer, pointProcessor, inputCloudI);
 
 		streamIterator++;
