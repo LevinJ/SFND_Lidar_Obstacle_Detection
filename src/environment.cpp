@@ -168,6 +168,7 @@ int main (int argc, char** argv)
 
 //    cityBlock(viewer);
 //    ProcessPointClouds<pcl::PointXYZI> *pointProcessor = new ProcessPointClouds<pcl::PointXYZI>();
+
     //ProcessPointCloudsCourse uses the RANSAC, KDTreea and Eucleadian clustering implemented by myself
     ProcessPointClouds<pcl::PointXYZI> *pointProcessor = new ProcessPointCloudsCourse<pcl::PointXYZI>();
 
@@ -191,8 +192,13 @@ int main (int argc, char** argv)
 			 std::cout << "END OF PCD STREAM" << std::endl;
 			streamIterator = stream.begin();
 		}
-//			break;
+
+//		break;
 
         viewer->spinOnce ();
     } 
+
+//    while (!viewer->wasStopped ()){
+//    	viewer->spinOnce ();
+//    }
 }

@@ -16,7 +16,7 @@ class ProcessPointCloudsCourse: public ProcessPointClouds<PointT> {
 public:
 	ProcessPointCloudsCourse();
 
-	void RansacPlane(typename  pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol,
+	void RansacPlane(typename  pcl::PointCloud<PointT>::Ptr &cloud, int maxIterations, float distanceTol,
 			pcl::PointIndices &inliers, pcl::ModelCoefficients &model_coefficients);
 
 
