@@ -46,6 +46,7 @@ public:
 
     std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
 protected:
+    //the plane's distance to the lidar origin, used for debugging the sanity of the segmented plane
     float pnt2plane_distance(pcl::ModelCoefficients coef);
   
 };

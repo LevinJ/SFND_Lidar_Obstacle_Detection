@@ -123,6 +123,7 @@ int main ()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData(points);
 
 	KdTree* tree = new KdTree;
+	tree->dim = 2;
   
     for (int i=0; i<points.size(); i++) 
     	tree->insert(points[i],i); 

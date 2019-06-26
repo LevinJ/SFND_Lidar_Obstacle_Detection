@@ -20,6 +20,7 @@ struct Node
 struct KdTree
 {
 	Node* root;
+	int dim;
 
 	KdTree()
 	: root(NULL)
@@ -38,7 +39,7 @@ struct KdTree
 			return;
 		}
 
-		uint cd = depth % 2;
+		uint cd = depth % dim;
 		if(point[cd] < node->point[cd]){
 			insertHelper(node->left, depth+1, point, id);
 		}else{
@@ -57,22 +58,31 @@ struct KdTree
 	
 	void searchHelper(std::vector<float> target, Node *node, float distanceTol, int depth, std::vector<int> &ids){
 		if(node == NULL) return;
+
 		//check if we need to add current node to the list
-		if (node->point[0] >= (target[0] - distanceTol) &&
-				node->point[0] <= (target[0] + distanceTol) &&
-				node->point[1] >= (target[1] - distanceTol) &&
-				node->point[1] <= (target[1] + distanceTol)){
-			float distance = sqrt((node->point[0]-target[0]) * (node->point[0]-target[0]) + (node->point[1]-target[1]) * (node->point[1]-target[1]));
+		bool bwithindistance = true;
+		for(int d=0; d < dim; d++){
+			if(node->point[d] < (target[d] - distanceTol) || node->point[d] > (target[d] + distanceTol)){
+				bwithindistance = false;
+				break;
+			}
+		}
+		if(bwithindistance){
+			float distance = 0;
+			for(int d=0; d < dim; d++){
+				distance += (node->point[d]-target[d]) * (node->point[d]-target[d]);
+			}
+			distance = sqrt(distance);
 			if(distance <= distanceTol){
 				ids.push_back(node->id);
 			}
 		}
 
 		//check across boundary
-		if ((target[depth%2] - distanceTol) <= node->point[depth%2] ){
+		if ((target[depth%dim] - distanceTol) <= node->point[depth%dim] ){
 			searchHelper(target, node->left, distanceTol, depth + 1, ids);
 		}
-		if ((target[depth%2] + distanceTol) >= node->point[depth%2]){
+		if ((target[depth%dim] + distanceTol) >= node->point[depth%dim]){
 			searchHelper(target, node->right, distanceTol, depth + 1, ids);
 		}
 	}
