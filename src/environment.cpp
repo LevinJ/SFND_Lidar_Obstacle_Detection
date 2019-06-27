@@ -193,12 +193,12 @@ int main (int argc, char** argv)
 			streamIterator = stream.begin();
 		}
 
-//		break;
+		break;
 
         viewer->spinOnce ();
     } 
 
-//    while (!viewer->wasStopped ()){
-//    	viewer->spinOnce ();
-//    }
+    while (!viewer->wasStopped ()){
+    	viewer->spinOnce ();
+    }
 }
