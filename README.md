@@ -11,13 +11,10 @@ This project implements a basic pipeline to detect obstables using lidar data. T
 2. plane segmentation
 3. obstacle clustering
 
-All the key algorithms used in the pipeline like RANSAC plane segmentation, three dimension KD tree, and Euclidean Clutering are implemented with C++, as opposed to the ready API provided in PCl library in the attempt to gain deeper understanding about these algorithms. 
+All the key algorithms used in the pipeline like RANSAC plane segmentation, three dimension KD tree, and Euclidean Clutering are implemented with raw C++, as opposed to the ready API provided in PCl library in the attempt to gain deeper understanding about these algorithms. 
 
 ## Final Result
-The pipleine is applied to a recorded lidar data stream, and reasonably good result are obtained as below.
-
-Raw lidar point cloud
-
+The pipleine is applied to a recorded lidar data stream, and reasonably good result is obtained as below.
 
 Obstable detection result
 
@@ -31,7 +28,7 @@ Obstable detection result
 
 ### Fitlering
 
-Two filtering operation are done:  
+Two filtering operations are done:  
 1) Use VoxelGrid to reduce the resolution of lidar point cloud  
 2) Use Region of interest to fitler out areas that are far away from the ego car, as well as the roof area  
 
@@ -50,7 +47,7 @@ RANSAC is an effective approch to fit a modle out of data with many outliers. Ba
 
 <img src="media/segmented.png" width="700" height="400" />
 
-The plane segmentation takes about 122 ms per frame, while the one implemented in PCL libary API takes about 1 ms. The difference could come from differnt RANSAC approach. Another approach would be to randomly sample a percentage of the points, like 20%, fit a plane to that, and then calcuate the fitting error of the plane. After certain number of iterations, pick the model with least error. This approach avoid transversing every single points while calculating the consensus of the model, and is expected to faster. 
+The plane segmentation takes about 122 ms per frame, while the one implemented in PCL libary API takes about 1 ms. The difference could come from differnt RANSAC approach. Another approach would be to randomly sample a percentage of the points, like 20%, fit a plane to that, and then calcuate the fitting error of the plane. After certain number of iterations, pick the model with least error. This approach avoid transversing all of the points while calculating the consensus of the model, and is expected to be faster. 
 
 ### Obstacle detection
 
@@ -62,11 +59,11 @@ KD Tree can help speed up the process of finding nearest neighbour. Its implemen
 
 ### Euclidean Clutering
 
-Intuively speaking, Euclidean clustering cluster points as one group if their euclidean distance is within a specific range d. below are the steps,  
+Intuitively speaking, Euclidean clustering cluster points as one group if their euclidean distance are within a specific range d. below are the steps,  
 
 1) start with a point, pick all of  neighbours B within distance d    
-2) iterate on all of the points in B  
-3) gourp the points obtained in 1) and 2) as a cluster, remvoe them from the points set, and continue to cluster remaining points.  
+2) enumerate all of the points in B and perfrom step 1) on them
+3) group the points obtained in 1) and 2) as a cluster, remove them from the point set, and continue to cluster remaining points.  
 
 <img src="media/clustered.png" width="700" height="400" />
 
