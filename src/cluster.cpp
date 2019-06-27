@@ -5,6 +5,7 @@
 #include <string>
 #include "kdtree.h"
 #include <iostream>
+#include <pcl/common/common.h>
 
 
 
@@ -20,7 +21,8 @@ void clusterHelper(const std::vector<std::vector<float>>& points, KdTree* tree, 
 }
 
 
-void euclideanClusterWrapper(const std::vector<std::vector<float>>& points,  float clusterTolerance, int minSize, int maxSize, std::vector<std::vector<int>> &clusters)
+void euclideanClusterWrapper(const std::vector<std::vector<float>>& points,  float clusterTolerance, int minSize,
+		int maxSize, std::vector<pcl::PointIndices> &cluster_indices)
 {
 	if(points.size() < minSize){
 		return;
@@ -37,13 +39,15 @@ void euclideanClusterWrapper(const std::vector<std::vector<float>>& points,  flo
 		if(processed[i]) continue;
 		std::vector<int> cluster;
 		clusterHelper(points, &tree, clusterTolerance, i, cluster, processed);
-		//fitler out cluster whose size is not within range
+		//filter out cluster whose size is not within range
 		uint cluster_size = cluster.size();
 		if(cluster_size < minSize || cluster_size > maxSize){
 //			std::cout<<"discarded cluster "<<cluster_size<<std::endl;
 			continue;
 		}
-		clusters.push_back(cluster);
+		pcl::PointIndices indices;
+		indices.indices = std::move(cluster);
+		cluster_indices.push_back(indices);
 	}
 	return;
 }

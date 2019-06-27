@@ -9,7 +9,7 @@
 #include <unordered_set>
 
 void euclideanClusterWrapper(const std::vector<std::vector<float>>& points,  float clusterTolerance,
-		int minSize, int maxSize, std::vector<std::vector<int>> &clusters);
+		int minSize, int maxSize, std::vector<pcl::PointIndices> &cluster_indices);
 
 template<typename PointT>
 ProcessPointCloudsCourse<PointT>::ProcessPointCloudsCourse() {
@@ -151,19 +151,13 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 template<typename PointT>
 void ProcessPointCloudsCourse<PointT>::euclidian_clustering(typename pcl::PointCloud<PointT>::Ptr &cloud, float clusterTolerance,
 			int minSize, int maxSize, std::vector<pcl::PointIndices> &cluster_indices){
+
 	std::vector<std::vector<float>> points;
-	std::vector<std::vector<int>> clusters;
 	//prepare the poitns in the form of std::vector<std::vector<float>>
 	for(PointT &p : cloud->points){
 		points.push_back({p.x, p.y, p.z});
 	}
-	euclideanClusterWrapper(points,  clusterTolerance, minSize, maxSize, clusters);
-
-	for(auto cluster: clusters){
-		pcl::PointIndices indices;
-		indices.indices = std::move(cluster);
-		cluster_indices.push_back(indices);
-	}
+	euclideanClusterWrapper(points,  clusterTolerance, minSize, maxSize, cluster_indices);
 }
 
 template<typename PointT>
