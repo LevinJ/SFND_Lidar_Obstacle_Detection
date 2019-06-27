@@ -67,7 +67,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
     for(pcl::PointCloud<pcl::PointXYZ>::Ptr cluster : cloudClusters)
     {
-          std::cout << "cluster size ";
+//          std::cout << "cluster size ";
           pointProcessor.numPoints(cluster);
           renderPointCloud(viewer,cluster,"obstCloud"+std::to_string(clusterId),colors[clusterId]);
           Box box = pointProcessor.BoundingBox(cluster);
@@ -123,9 +123,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
 
   for(pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters)
   {
-		std::cout << "cluster size ";
-		pointProcessor->numPoints(cluster);
-//		renderPointCloud(viewer,cluster,"obstCloud"+std::to_string(clusterId),colors[clusterId]);
+		renderPointCloud(viewer,cluster,"obstCloud"+std::to_string(clusterId),colors[clusterId]);
 		Box box = pointProcessor->BoundingBox(cluster);
 		renderBox(viewer,box,clusterId);
 		++clusterId;
@@ -193,12 +191,12 @@ int main (int argc, char** argv)
 			streamIterator = stream.begin();
 		}
 
-		break;
+//		break;
 
         viewer->spinOnce ();
     } 
 
-    while (!viewer->wasStopped ()){
-    	viewer->spinOnce ();
-    }
+//    while (!viewer->wasStopped ()){
+//    	viewer->spinOnce ();
+//    }
 }

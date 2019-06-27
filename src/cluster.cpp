@@ -40,7 +40,7 @@ void euclideanClusterWrapper(const std::vector<std::vector<float>>& points,  flo
 		//fitler out cluster whose size is not within range
 		uint cluster_size = cluster.size();
 		if(cluster_size < minSize || cluster_size > maxSize){
-			std::cout<<"discarded cluster "<<cluster_size<<std::endl;
+//			std::cout<<"discarded cluster "<<cluster_size<<std::endl;
 			continue;
 		}
 		clusters.push_back(cluster);
